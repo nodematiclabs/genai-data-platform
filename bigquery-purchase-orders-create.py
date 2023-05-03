@@ -10,7 +10,7 @@ fake = Faker()
 # Set up BigQuery dataset and table
 project_id = os.getenv("GOOGLE_PROJECT")
 dataset_id = os.getenv("DATASET")
-table_id = 'purchase_orders'
+table_id = "purchase_orders"
 table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
 # Create a schema for the table

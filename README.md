@@ -10,6 +10,9 @@ export BIGTABLE_INSTANCE=""
 export SPANNER_INSTANCE=""
 export DATASET=""
 export BUCKET=""
+export LAKE=""
+export ZONE=""
+export TAG_TEMPLATE=""
 export OPENAI_API_KEY=""
 ```
 

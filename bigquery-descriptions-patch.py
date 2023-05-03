@@ -11,6 +11,7 @@ dataset_id = os.getenv("DATASET")
 # Initialize the OpenAI API client
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+
 def generate_summary(prompt):
     response = openai.Completion.create(
         engine="text-davinci-003",
@@ -24,11 +25,15 @@ def generate_summary(prompt):
     summary = response.choices[0].text.strip()
     return summary
 
+
 def update_dataset_description(client, dataset_id, description):
     dataset = client.get_dataset(dataset_id)
     dataset.description = description
     updated_dataset = client.update_dataset(dataset, ["description"])
-    print(f"Updated dataset {dataset_id} with description: {updated_dataset.description}")
+    print(
+        f"Updated dataset {dataset_id} with description: {updated_dataset.description}"
+    )
+
 
 def get_table_column_names(client, table_id):
     column_names_query = f"""
@@ -38,17 +43,26 @@ def get_table_column_names(client, table_id):
     """
 
     job_config = bigquery.QueryJobConfig(
-        query_parameters=[bigquery.ScalarQueryParameter("table_name", "STRING", table_id.split(".")[-1])]
+        query_parameters=[
+            bigquery.ScalarQueryParameter(
+                "table_name", "STRING", table_id.split(".")[-1]
+            )
+        ]
     )
 
-    column_names = [row.column_name for row in client.query(column_names_query, job_config=job_config)]
+    column_names = [
+        row.column_name
+        for row in client.query(column_names_query, job_config=job_config)
+    ]
     return column_names
+
 
 def update_table_description(client, table_id, description):
     table = client.get_table(table_id)
     table.description = description
     updated_table = client.update_table(table, ["description"])
     print(f"Updated table {table_id} with description: {updated_table.description}")
+
 
 if __name__ == "__main__":
     # Create a BigQuery client

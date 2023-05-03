@@ -11,8 +11,11 @@ from google.api_core.exceptions import AlreadyExists, Conflict, InvalidArgument
 project_id = os.getenv("GOOGLE_PROJECT")
 region = os.getenv("REGION")
 dataset_id = os.getenv("DATASET")
-bigquery_tables = ['customers', 'businesses', 'products', 'purchase_orders']
+bigquery_tables = ["customers", "businesses", "products", "purchase_orders"]
 bucket_name = os.getenv("BUCKET")
+lake_id = os.getenv("LAKE")
+zone_id = os.getenv("ZONE")
+tag_template_id = os.getenv("TAG_TEMPLATE")
 
 # Initialize the BigQuery and Cloud Storage clients
 bigquery_client = bigquery.Client(project=project_id)
@@ -38,7 +41,7 @@ try:
     operation = dataplex_service_client.create_lake(
         request={
             "parent": parent,
-            "lake_id": "analytics-assets",
+            "lake_id": lake_id,
         }
     )
     print("Waiting for operation to complete...")
@@ -49,13 +52,13 @@ except AlreadyExists as e:
 
 
 # Initialize zone request
-parent = f"projects/{project_id}/locations/{region}/lakes/analytics-assets"
+parent = f"projects/{project_id}/locations/{region}/lakes/{lake_id}"
 zone = dataplex.Zone()
 zone.type = "RAW"
 zone.resource_spec.location_type = "MULTI_REGION"
 request = dataplex.CreateZoneRequest(
     parent=parent,
-    zone_id="logistics",
+    zone_id=zone_id,
     zone=zone,
 )
 
@@ -69,7 +72,7 @@ except InvalidArgument:
     print("Zone already exists.")
 
 # Initialize the dataset asset request
-parent = f"projects/{project_id}/locations/{region}/lakes/analytics-assets/zones/logistics"
+parent = f"projects/{project_id}/locations/{region}/lakes/{lake_id}/zones/{zone_id}"
 asset = dataplex.Asset()
 asset.resource_spec.name = f"projects/{project_id}/datasets/{dataset_id}"
 asset.resource_spec.type = "BIGQUERY_DATASET"
@@ -90,7 +93,7 @@ except InvalidArgument:
     print("Asset already exists.")
 
 # Initialize the bucket asset request
-parent = f"projects/{project_id}/locations/{region}/lakes/analytics-assets/zones/logistics"
+parent = f"projects/{project_id}/locations/{region}/lakes/{lake_id}/zones/{zone_id}"
 asset = dataplex.Asset()
 asset.resource_spec.name = f"projects/{project_id}/buckets/{bucket_name}"
 asset.resource_spec.type = "STORAGE_BUCKET"
@@ -118,36 +121,36 @@ tag_template.fields["source"] = datacatalog.TagTemplateField(
     display_name="Source",
     type_={
         "primitive_type": datacatalog.FieldType.PrimitiveType.STRING,
-    }
+    },
 )
 tag_template.fields["tldr"] = datacatalog.TagTemplateField(
     display_name="TLDR",
     type_={
         "primitive_type": datacatalog.FieldType.PrimitiveType.RICHTEXT,
-    }
+    },
 )
 tag_template.fields["start_datetime"] = datacatalog.TagTemplateField(
     display_name="Start Datetime",
     type_={
         "primitive_type": datacatalog.FieldType.PrimitiveType.TIMESTAMP,
-    }
+    },
 )
 tag_template.fields["end_datetime"] = datacatalog.TagTemplateField(
     display_name="End Datetime",
     type_={
         "primitive_type": datacatalog.FieldType.PrimitiveType.TIMESTAMP,
-    }
+    },
 )
 tag_template.fields["is_sensitive"] = datacatalog.TagTemplateField(
     display_name="Is Sensitive",
     type_={
         "primitive_type": datacatalog.FieldType.PrimitiveType.BOOL,
-    }
+    },
 )
 tag_template.display_name = "context"
 request = datacatalog.CreateTagTemplateRequest(
     parent=f"projects/{project_id}/locations/{region}",
-    tag_template_id="data_platform",
+    tag_template_id=tag_template_id,
     tag_template=tag_template,
 )
 
@@ -166,10 +169,10 @@ for table in bigquery_tables:
         data_scan_id=f"{table.replace('_', '-')}-profile",
         data_scan=dataplex.DataScan(
             data=dataplex.DataSource(
-                entity=f"projects/{project_id}/locations/{region}/lakes/analytics-assets/zones/logistics/entities/{table}"
+                entity=f"projects/{project_id}/locations/{region}/lakes/{lake_id}/zones/{zone_id}/entities/{table}"
             ),
-            data_profile_spec=dataplex.DataProfileSpec()
-        )
+            data_profile_spec=dataplex.DataProfileSpec(),
+        ),
     )
     try:
         operation = dataplex_scan_client.create_data_scan(request=request)
@@ -185,7 +188,10 @@ for table in bigquery_tables:
     )
     response = dataplex_scan_client.run_data_scan(request=request)
     job = response.job
-    while job.state in [dataplex.DataScanJob.State.PENDING, dataplex.DataScanJob.State.RUNNING]:
+    while job.state in [
+        dataplex.DataScanJob.State.PENDING,
+        dataplex.DataScanJob.State.RUNNING,
+    ]:
         time.sleep(5)
         job = dataplex_scan_client.get_data_scan_job(name=job.name)
         print("Waiting for profile scan to complete...")
@@ -201,7 +207,7 @@ for table in bigquery_tables:
         data_scan_id=f"{table.replace('_', '-')}-completeness",
         data_scan=dataplex.DataScan(
             data=dataplex.DataSource(
-                entity=f"projects/{project_id}/locations/{region}/lakes/analytics-assets/zones/logistics/entities/{table}"
+                entity=f"projects/{project_id}/locations/{region}/lakes/{lake_id}/zones/{zone_id}/entities/{table}"
             ),
             data_quality_spec=dataplex.DataQualitySpec(
                 rules=[
@@ -210,9 +216,10 @@ for table in bigquery_tables:
                         non_null_expectation={},
                         dimension="COMPLETENESS",
                     )
-                for column_name in column_names]
-            )
-        )
+                    for column_name in column_names
+                ]
+            ),
+        ),
     )
     try:
         operation = dataplex_scan_client.create_data_scan(request=request)
@@ -222,28 +229,16 @@ for table in bigquery_tables:
     except AlreadyExists:
         print("Data quality scan already exists.")
 
-
     # Run the data quality scan
     request = dataplex.RunDataScanRequest(
         name=f"projects/{project_id}/locations/{region}/dataScans/{table.replace('_', '-')}-completeness",
     )
     response = dataplex_scan_client.run_data_scan(request=request)
     job = response.job
-    while job.state in [dataplex.DataScanJob.State.PENDING, dataplex.DataScanJob.State.RUNNING]:
+    while job.state in [
+        dataplex.DataScanJob.State.PENDING,
+        dataplex.DataScanJob.State.RUNNING,
+    ]:
         time.sleep(5)
         job = dataplex_scan_client.get_data_scan_job(name=job.name)
         print("Waiting for quality scan to complete...")
-
-    # # Populate the content tag template with the data profiling scan results
-    # tag = datacatalog.Tag()
-    # tag.column = "column_value"
-    # tag.template = f"projects/{project_id}/locations/{region}/tagTemplates/context"
-
-    # request = datacatalog_v1.CreateTagRequest(
-    #     parent="parent_value",
-    #     tag=tag,
-    # )
-
-    # # Make the request
-    # response = client.create_tag(request=request)
-

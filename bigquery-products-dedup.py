@@ -36,4 +36,6 @@ destination_table = client.get_table(f"{project_id}.{dataset_id}.{table_name}")
 client.load_table_from_dataframe(df, destination_table, location="US").result()
 
 # Print a message to confirm the operation
-print(f"The table {table_name} in dataset {dataset_id} has been overwritten with the deduplicated data.")
+print(
+    f"The table {table_name} in dataset {dataset_id} has been overwritten with the deduplicated data."
+)

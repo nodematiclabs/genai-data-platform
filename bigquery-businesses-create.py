@@ -10,7 +10,7 @@ fake = Faker()
 # Set up BigQuery dataset and table
 project_id = os.getenv("GOOGLE_PROJECT")
 dataset_id = os.getenv("DATASET")
-table_id = 'businesses'
+table_id = "businesses"
 table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
 # Create a schema for the table
@@ -34,7 +34,16 @@ table = client.create_table(table, exists_ok=True)
 # Generate and insert fake business data
 num_rows = 1000
 rows_to_insert = []
-business_categories = ["Restaurant", "Retail", "Healthcare", "Automotive", "Technology", "Finance", "Education", "Real Estate"]
+business_categories = [
+    "Restaurant",
+    "Retail",
+    "Healthcare",
+    "Automotive",
+    "Technology",
+    "Finance",
+    "Education",
+    "Real Estate",
+]
 
 for i in range(num_rows):
     business_id = i + 1

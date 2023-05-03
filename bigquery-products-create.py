@@ -11,7 +11,7 @@ fake = Faker()
 # Set up BigQuery dataset and table
 project_id = os.getenv("GOOGLE_PROJECT")
 dataset_id = os.getenv("DATASET")
-table_id = 'products'
+table_id = "products"
 table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
 # Create a schema for the table
@@ -33,15 +33,37 @@ table = client.create_table(table, exists_ok=True)
 # Generate and insert fake product topology and metadata
 num_rows = 1000
 rows_to_insert = []
-categories = ["Electronics", "Furniture", "Tools", "Automotive", "Toys", "Appliances", "Clothing", "Accessories"]
+categories = [
+    "Electronics",
+    "Furniture",
+    "Tools",
+    "Automotive",
+    "Toys",
+    "Appliances",
+    "Clothing",
+    "Accessories",
+]
 materials = ["Plastic", "Wood", "Metal", "Ceramic", "Glass", "Fabric", "Composite"]
-colors = ["Red", "Blue", "Green", "Yellow", "Black", "White", "Silver", "Gold", "Orange", "Purple"]
+colors = [
+    "Red",
+    "Blue",
+    "Green",
+    "Yellow",
+    "Black",
+    "White",
+    "Silver",
+    "Gold",
+    "Orange",
+    "Purple",
+]
 
 for i in range(num_rows):
     product_id = i + 1
     product_name = f"Widget {random.choice(string.ascii_uppercase)}"
     category = random.choice(categories)
-    dimensions = f"{random.randint(1, 50)}x{random.randint(1, 50)}x{random.randint(1, 50)} cm"
+    dimensions = (
+        f"{random.randint(1, 50)}x{random.randint(1, 50)}x{random.randint(1, 50)} cm"
+    )
     weight = round(random.uniform(0.5, 50), 2)
     material = random.choice(materials)
     color = random.choice(colors)

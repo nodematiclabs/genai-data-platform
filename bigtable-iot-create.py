@@ -44,11 +44,13 @@ table = instance.table(table_name)
 max_age = datetime.timedelta(days=7)
 
 if not table.exists():
-    table.create(column_families={
-        "machine_info": column_family.MaxAgeGCRule(max_age),
-        "sensor_info": column_family.MaxAgeGCRule(max_age),
-        "measurement_data": column_family.MaxAgeGCRule(max_age)
-    })
+    table.create(
+        column_families={
+            "machine_info": column_family.MaxAgeGCRule(max_age),
+            "sensor_info": column_family.MaxAgeGCRule(max_age),
+            "measurement_data": column_family.MaxAgeGCRule(max_age),
+        }
+    )
 
 # Generate machine information
 machine_ids = [f"machine_{i}" for i in range(num_machines)]
@@ -71,22 +73,19 @@ for i in range(num_rows):
     machine_info = {
         "machine_id": machine_id.encode(),
         "machine_type": machine_type.encode(),
-        "machine_location": machine_location.encode()
+        "machine_location": machine_location.encode(),
     }
 
     sensor_id = random.choice(sensor_ids)
     sensor_type = random.choice(sensor_types)
-    sensor_info = {
-        "sensor_id": sensor_id.encode(),
-        "sensor_type": sensor_type.encode()
-    }
+    sensor_info = {"sensor_id": sensor_id.encode(), "sensor_type": sensor_type.encode()}
 
     measurement_name = random.choice(measurement_names)
     measurement_value = random.random()
     measurement_timestamp = int(time.time() - (num_rows - i) * time_interval)
     measurement_data = {
         measurement_name: str(measurement_value).encode(),
-        "timestamp": str(measurement_timestamp).encode()
+        "timestamp": str(measurement_timestamp).encode(),
     }
 
     row = table.row(row_key.encode())
@@ -95,9 +94,12 @@ for i in range(num_rows):
     row.set_cell("machine_info", "machine_location", machine_info["machine_location"])
     row.set_cell("sensor_info", "sensor_id", sensor_info["sensor_id"])
     row.set_cell("sensor_info", "sensor_type", sensor_info["sensor_type"])
-    row.set_cell("measurement_data", measurement_name, measurement_data[measurement_name])
+    row.set_cell(
+        "measurement_data", measurement_name, measurement_data[measurement_name]
+    )
     row.set_cell("measurement_data", "timestamp", measurement_data["timestamp"])
 
 # Print a message to confirm the operation
-print(f"The table {table_name} in the Bigtable instance {instance_id} has been populated with {num_rows} rows of simulated manufacturing IoT data.")
-
+print(
+    f"The table {table_name} in the Bigtable instance {instance_id} has been populated with {num_rows} rows of simulated manufacturing IoT data."
+)

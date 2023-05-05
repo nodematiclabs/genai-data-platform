@@ -1,4 +1,7 @@
+import os
+
 import pandas as pd
+
 from google.cloud import bigquery
 
 # Replace with your project ID

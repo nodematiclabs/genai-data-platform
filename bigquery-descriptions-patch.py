@@ -74,13 +74,11 @@ if __name__ == "__main__":
         table_id = f"{dataset_id}.{table}"
         column_names = get_table_column_names(client, table_id)
         table_prompt = f"Provide a one-sentence use-case-focused description for a {' '.join(table.split('_'))} table with columns '{', '.join(column_names)}'."
-        print(table_prompt)
         table_summary = generate_summary(table_prompt)
         update_table_description(client, table_id, table_summary)
         time.sleep(60)
 
     # Generate and update dataset description using OpenAI API
     dataset_prompt = f"Provide a one-sentence use-case-focused description for a {' '.join(dataset_id.split('_'))} dataset with tables '{', '.join(tables)}'."
-    print(dataset_prompt)
     dataset_description = generate_summary(dataset_prompt)
     update_dataset_description(client, dataset_id, dataset_description)

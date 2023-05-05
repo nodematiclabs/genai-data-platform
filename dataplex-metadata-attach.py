@@ -53,8 +53,11 @@ def get_date_range(table):
     end_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     for field in latest_job.data_profile_result.profile.fields:
         if field.type_ == "DATE":
-            start_date = field.profile.date_profile.min_value
-            end_date = field.profile.date_profile.max_value
+            try:
+                start_date = field.profile.date_profile.min_value
+                end_date = field.profile.date_profile.max_value
+            except:
+                pass
     return start_date, end_date
 
 

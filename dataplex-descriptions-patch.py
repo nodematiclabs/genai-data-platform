@@ -1,5 +1,6 @@
 import os
 import openai
+import time
 
 from google.cloud import dataplex
 
@@ -22,6 +23,7 @@ def generate_summary(prompt):
         stop=None,
         temperature=0.7,
     )
+    time.sleep(60)  # OpenAI rate limiting 
 
     summary = response.choices[0].text.strip()
     return summary
@@ -60,16 +62,5 @@ if __name__ == "__main__":
         asset_prompt = f"Provide a one-sentence use-case-focused description for a Dataplex asset with the ID '{asset_id}'."
         asset_description = generate_summary(asset_prompt)
         update_dataplex_asset_description(
-            dataplex_metadata_client, asset_id, asset_description
-        )
-
-    # Generate and update Dataplex entity descriptions using OpenAI API
-    for entity in dataplex_metadata_client.list_entities(
-        parent=f"projects/{project_id}/locations/{region}/lakes/{lake_id}/zones/{zone_id}"
-    ):
-        entity_id = entity.name
-        entity_prompt = f"Provide a one-sentence use-case-focused description for a Dataplex asset with the ID '{entity_id}'."
-        entity_description = generate_summary(entity_prompt)
-        update_dataplex_asset_description(
-            dataplex_metadata_client, entity_id, entity_description
+            dataplex_service_client, asset_id, asset_description
         )

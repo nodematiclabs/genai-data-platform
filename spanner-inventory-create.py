@@ -3,6 +3,7 @@ import random
 import string
 
 from faker import Faker
+from google.api_core.exceptions import AlreadyExists
 from google.cloud import spanner
 
 # Set up Google Cloud Spanner client
@@ -19,22 +20,25 @@ instance = spanner_client.instance(instance_id)
 
 # Create a Cloud Spanner database
 def create_database():
-    database = instance.database(
-        database_id,
-        ddl_statements=[
-            """CREATE TABLE Inventory (
-            ItemID STRING(36) NOT NULL,
-            ItemName STRING(256) NOT NULL,
-            Warehouse STRING(256) NOT NULL,
-            Quantity INT64 NOT NULL,
-            UnitCost FLOAT64 NOT NULL,
-        ) PRIMARY KEY (ItemID)"""
-        ],
-    )
-    operation = database.create()
-    print("Waiting for operation to complete...")
-    operation.result()
-    print("Database created.")
+    try:
+        database = instance.database(
+            database_id,
+            ddl_statements=[
+                """CREATE TABLE Inventory (
+                ItemID STRING(36) NOT NULL,
+                ItemName STRING(256) NOT NULL,
+                Warehouse STRING(256) NOT NULL,
+                Quantity INT64 NOT NULL,
+                UnitCost FLOAT64 NOT NULL,
+            ) PRIMARY KEY (ItemID)"""
+            ],
+        )
+        operation = database.create()
+        print("Waiting for operation to complete...")
+        operation.result()
+        print("Database created.")
+    except AlreadyExists:
+        print("Database already exists...")
 
 
 # Generate random, fake manufacturing inventory data

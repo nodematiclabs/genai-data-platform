@@ -1,3 +1,4 @@
+import os
 import time
 
 from google.cloud import bigquery
@@ -27,6 +28,7 @@ datacatalog_client = datacatalog.DataCatalogClient()
 # Create the BigQuery dataset
 dataset_ref = bigquery_client.dataset(dataset_id)
 dataset = bigquery.Dataset(dataset_ref)
+
 
 # Create the Cloud Storage bucket
 try:

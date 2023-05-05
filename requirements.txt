@@ -1,0 +1,10 @@
+google-cloud-bigquery
+google-cloud-bigtable
+google-cloud-datacatalog
+google-cloud-dataplex
+google-cloud-pubsub
+google-cloud-spanner
+google-cloud-storage
+Faker
+openai
+pandas

@@ -129,7 +129,7 @@ for table in bigquery_tables:
         entry = datacatalog.Entry()
         entry.display_name = table
         entry.linked_resource = f"//bigquery.googleapis.com/projects/{project_id}/datasets/{dataset_id}/tables/{table}"
-        entry.user_specified_system = "bigquery"
+        entry.user_specified_system = "DB2"
         entry.user_specified_type = "table"
         entry.description = generate_tag_field(
             f"Provide a one-sentence use-case-focused description for a table with headers: {headers_str}. Rows:\n{rows_str}"

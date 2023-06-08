@@ -29,7 +29,6 @@ datacatalog_client = datacatalog.DataCatalogClient()
 dataset_ref = bigquery_client.dataset(dataset_id)
 dataset = bigquery.Dataset(dataset_ref)
 
-
 # Create the Cloud Storage bucket
 try:
     storage_client.create_bucket(bucket_name)
@@ -58,6 +57,9 @@ parent = f"projects/{project_id}/locations/{region}/lakes/{lake_id}"
 zone = dataplex.Zone()
 zone.type = "RAW"
 zone.resource_spec.location_type = "MULTI_REGION"
+zone.discovery_spec = {
+    "enabled": True,
+}
 request = dataplex.CreateZoneRequest(
     parent=parent,
     zone_id=zone_id,
